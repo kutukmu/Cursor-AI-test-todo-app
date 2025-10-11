@@ -19,6 +19,7 @@ import AddTodo from "../components/AddTodo";
 import TodoItem from "../components/TodoItem";
 import ProgressBar from "../components/ProgressBar";
 import RoutineTemplates from "../components/RoutineTemplates";
+import ProfileModal from "../components/ProfileModal";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useTheme } from "../contexts/ThemeContext";
 import { useAuth, useUser } from "@clerk/clerk-expo";
@@ -31,6 +32,7 @@ export default function Home() {
   const { user } = useUser();
   const router = useRouter();
   const [showTemplates, setShowTemplates] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   
   // Get userId from Clerk
   const userId = user?.id || "";
@@ -112,6 +114,13 @@ export default function Home() {
                 </Text>
               </View>
               <View style={styles.headerRight}>
+                {/* Profile Button */}
+                <Pressable 
+                  onPress={() => setShowProfile(true)} 
+                  style={styles.profileButton}
+                >
+                  <Text style={styles.profileIcon}>👤</Text>
+                </Pressable>
                 {/* Theme Toggle Button */}
                 <Pressable onPress={toggleTheme} style={styles.themeButton}>
                   <Text style={styles.themeIcon}>
@@ -227,6 +236,14 @@ export default function Home() {
             onClose={() => setShowTemplates(false)}
           />
         )}
+
+        {/* Profile Modal */}
+        {showProfile && userId && (
+          <ProfileModal
+            userId={userId}
+            onClose={() => setShowProfile(false)}
+          />
+        )}
       </SafeAreaView>
     </LinearGradient>
   );
@@ -268,6 +285,18 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
+  },
+  profileButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#ffffff22",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 4,
+  },
+  profileIcon: {
+    fontSize: 24,
   },
   themeButton: {
     width: 48,
