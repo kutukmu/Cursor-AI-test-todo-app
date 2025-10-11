@@ -18,6 +18,16 @@ export const addTodo = mutation({
   args: { 
     text: v.string(),
     userId: v.string(),
+    category: v.optional(v.union(
+      v.literal("wash"),
+      v.literal("condition"),
+      v.literal("treatment"),
+      v.literal("styling"),
+      v.literal("protection"),
+      v.literal("other")
+    )),
+    productName: v.optional(v.string()),
+    notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const todoId = await ctx.db.insert("todos", {
@@ -25,6 +35,9 @@ export const addTodo = mutation({
       isCompleted: false,
       createdAt: Date.now(),
       userId: args.userId,
+      category: args.category,
+      productName: args.productName,
+      notes: args.notes,
     });
     return todoId;
   },

@@ -7,6 +7,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
@@ -16,22 +18,26 @@ import { Id } from "../convex/_generated/dataModel";
 import AddTodo from "../components/AddTodo";
 import TodoItem from "../components/TodoItem";
 import ProgressBar from "../components/ProgressBar";
+import RoutineTemplates from "../components/RoutineTemplates";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useTheme } from "../contexts/ThemeContext";
 import { useAuth, useUser } from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
+import { HairRoutineStep } from "../constants/hairRoutineTemplates";
 
 export default function Home() {
   const { colors, theme, toggleTheme } = useTheme();
   const { signOut } = useAuth();
   const { user } = useUser();
   const router = useRouter();
+  const [showTemplates, setShowTemplates] = useState(false);
   
   // Get userId from Clerk
   const userId = user?.id || "";
   
   // Pass userId to queries and mutations
   const todos = useQuery(api.todos.getTodos, userId ? { userId } : "skip");
+  const addTodo = useMutation(api.todos.addTodo);
   const toggleTodo = useMutation(api.todos.toggleTodo);
   const deleteTodo = useMutation(api.todos.deleteTodo);
   const updateTodo = useMutation(api.todos.updateTodo);
@@ -70,6 +76,18 @@ export default function Home() {
     router.replace("/welcome");
   };
 
+  const handleSelectTemplate = async (steps: HairRoutineStep[]) => {
+    if (!userId) return;
+    
+    // Add all template steps as todos
+    for (const step of steps) {
+      await addTodo({ 
+        text: step.text, 
+        userId,
+      });
+    }
+  };
+
   return (
     <LinearGradient
       colors={colors.background}
@@ -80,15 +98,17 @@ export default function Home() {
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.keyboardView}
         >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.contentWrapper}>
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.headerTop}>
               <View style={styles.headerLeft}>
                 <Text style={[styles.title, { color: colors.overlay }]}>
-                  ✨ My Tasks
+                  💁‍♀️ Hair Routine
                 </Text>
                 <Text style={[styles.subtitle, { color: colors.overlay }]}>
-                  Welcome, {user?.firstName || "there"}!
+                  Hey gorgeous, {user?.firstName || "beauty"}! 
                 </Text>
               </View>
               <View style={styles.headerRight}>
@@ -119,6 +139,16 @@ export default function Home() {
 
           {/* Add Todo */}
           <AddTodo />
+
+          {/* Quick Templates Button */}
+          <Pressable 
+            onPress={() => setShowTemplates(true)}
+            style={[styles.templatesButton, { backgroundColor: colors.primaryLight }]}
+          >
+            <Text style={[styles.templatesButtonText, { color: colors.overlay }]}>
+              ✨ Use a Template
+            </Text>
+          </Pressable>
 
           {/* Filter Buttons */}
           <View style={styles.filterContainer}>
@@ -163,10 +193,10 @@ export default function Home() {
               <View style={styles.emptyContainer}>
                 <Text style={[styles.emptyText, { color: colors.overlay }]}>
                   {filter === "all"
-                    ? "No tasks yet. Add one above! 🎯"
+                    ? "No routine steps yet. Start your hair care journey! 💇‍♀️"
                     : filter === "active"
-                    ? "No active tasks. You're all done! 🎉"
-                    : "No completed tasks yet. Keep going! 💪"}
+                    ? "All done! Your hair is going to look amazing! 🌟"
+                    : "No completed steps yet. You've got this! 💖"}
                 </Text>
               </View>
             }
@@ -186,7 +216,17 @@ export default function Home() {
               </Text>
             </Animated.View>
           )}
+            </View>
+          </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
+
+        {/* Routine Templates Modal */}
+        {showTemplates && (
+          <RoutineTemplates
+            onSelectTemplate={handleSelectTemplate}
+            onClose={() => setShowTemplates(false)}
+          />
+        )}
       </SafeAreaView>
     </LinearGradient>
   );
@@ -200,6 +240,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   keyboardView: {
+    flex: 1,
+  },
+  contentWrapper: {
     flex: 1,
   },
   header: {
@@ -296,6 +339,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     overflow: "hidden",
+  },
+  templatesButton: {
+    marginHorizontal: 20,
+    marginTop: 12,
+    paddingVertical: 12,
+    borderRadius: 16,
+    alignItems: "center",
+  },
+  templatesButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
 

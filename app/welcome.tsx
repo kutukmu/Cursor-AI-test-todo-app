@@ -32,33 +32,33 @@ export default function WelcomeScreen() {
         <View style={styles.content}>
           {/* Logo/Icon Area */}
           <Animated.View entering={FadeInUp.delay(200)} style={styles.logoContainer}>
-            <Text style={styles.logo}>✨</Text>
+            <Text style={styles.logo}>💇‍♀️</Text>
             <Text style={[styles.appName, { color: colors.overlay }]}>
-              Todo App
+              Hair Care Routine
             </Text>
             <Text style={[styles.tagline, { color: colors.overlay }]}>
-              Stay organized, stay productive
+              Beautiful hair starts with beautiful habits
             </Text>
           </Animated.View>
 
           {/* Features */}
           <Animated.View entering={FadeInDown.delay(400)} style={styles.featuresContainer}>
             <View style={styles.feature}>
-              <Text style={styles.featureIcon}>📝</Text>
+              <Text style={styles.featureIcon}>💆‍♀️</Text>
               <Text style={[styles.featureText, { color: colors.overlay }]}>
-                Manage your tasks effortlessly
+                Track your hair care routine
               </Text>
             </View>
             <View style={styles.feature}>
-              <Text style={styles.featureIcon}>🔄</Text>
+              <Text style={styles.featureIcon}>✨</Text>
               <Text style={[styles.featureText, { color: colors.overlay }]}>
-                Real-time sync across devices
+                Get personalized reminders
               </Text>
             </View>
             <View style={styles.feature}>
-              <Text style={styles.featureIcon}>🎯</Text>
+              <Text style={styles.featureIcon}>🌟</Text>
               <Text style={[styles.featureText, { color: colors.overlay }]}>
-                Track your progress
+                Build healthy hair habits
               </Text>
             </View>
           </Animated.View>

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Todo App",
-    "slug": "react-native-todo",
+    "name": "Hair Care Routine",
+    "slug": "hair-care-routine",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

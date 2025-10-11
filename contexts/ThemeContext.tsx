@@ -24,31 +24,31 @@ interface ThemeContextType {
 }
 
 const lightColors: ThemeColors = {
-  background: ["#667eea", "#764ba2", "#f093fb"],
+  background: ["#ff9a9e", "#fecfef", "#fbc2eb"], // Soft pink gradient
   cardBackground: "#ffffff",
-  text: "#333333",
+  text: "#4a4a4a",
   textSecondary: "#999999",
-  border: "#e0e0e0",
-  primary: "#667eea",
+  border: "#ffd6e8",
+  primary: "#ff6b9d", // Pink
   primaryLight: "#ffffff33",
-  completed: "#999999",
-  success: "#4caf50",
-  danger: "#ff4444",
-  overlay: "#ffffff99",
+  completed: "#c4c4c4",
+  success: "#ff85a1", // Rose pink for completed
+  danger: "#ff4081",
+  overlay: "#ffffffdd",
 };
 
 const darkColors: ThemeColors = {
-  background: ["#1a1a2e", "#16213e", "#0f3460"],
-  cardBackground: "#2d2d44",
-  text: "#ffffff",
-  textSecondary: "#b0b0b0",
-  border: "#3d3d5c",
-  primary: "#7c8ff7",
+  background: ["#2c1a3d", "#4a1f5c", "#6b2d7a"], // Deep purple gradient
+  cardBackground: "#3d2651",
+  text: "#fce4ec",
+  textSecondary: "#c4a5cf",
+  border: "#5a3768",
+  primary: "#f48fb1", // Light pink
   primaryLight: "#ffffff22",
-  completed: "#666666",
-  success: "#66bb6a",
-  danger: "#ef5350",
-  overlay: "#ffffffcc",
+  completed: "#8e8e8e",
+  success: "#ce93d8", // Lavender for completed
+  danger: "#ff4081",
+  overlay: "#fce4ecdd",
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);

@@ -38,12 +38,12 @@ export default function ProgressBar({
   };
 
   const getProgressMessage = () => {
-    if (totalTodos === 0) return "Add your first task!";
-    if (completionRate === 100) return "All done! 🎉";
-    if (completionRate >= 75) return "Almost there! 💪";
-    if (completionRate >= 50) return "Great progress! 🚀";
-    if (completionRate >= 25) return "Keep going! 👍";
-    return "Just getting started! 🌟";
+    if (totalTodos === 0) return "Start your hair care journey! 💕";
+    if (completionRate === 100) return "Hair goals achieved! 🌟";
+    if (completionRate >= 75) return "Almost done, gorgeous! 💁‍♀️";
+    if (completionRate >= 50) return "Looking good! Keep it up! ✨";
+    if (completionRate >= 25) return "You're glowing! 💖";
+    return "Every step counts! 🌸";
   };
 
   return (
@@ -68,7 +68,7 @@ export default function ProgressBar({
       </View>
       
       <Text style={[styles.stats, { color: colors.overlay }]}>
-        {completedTodos} of {totalTodos} tasks completed
+        {completedTodos} of {totalTodos} steps completed
       </Text>
     </View>
   );

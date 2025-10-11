@@ -49,12 +49,12 @@ export default function AddTodo() {
   return (
     <View style={styles.container}>
       <View style={[styles.inputContainer, { backgroundColor: colors.cardBackground }]}>
-        <Text style={styles.icon}>➕</Text>
+        <Text style={styles.icon}>💆‍♀️</Text>
         <TextInput
           style={[styles.input, { color: colors.text }]}
           value={text}
           onChangeText={setText}
-          placeholder="Add a new task..."
+          placeholder="Add hair care step..."
           placeholderTextColor={colors.textSecondary}
           onSubmitEditing={handleSubmit}
           returnKeyType="done"
