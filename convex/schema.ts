@@ -25,6 +25,8 @@ export default defineSchema({
   
   profiles: defineTable({
     userId: v.string(),
+    name: v.optional(v.string()),
+    age: v.optional(v.number()),
     hairType: v.optional(v.union(
       v.literal("straight"),
       v.literal("wavy"),

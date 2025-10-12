@@ -17,11 +17,13 @@ import Animated, {
   withSequence,
 } from "react-native-reanimated";
 import { useTheme } from "../contexts/ThemeContext";
-import { useUser } from "@clerk/clerk-expo";
 
-export default function AddTodo() {
+interface AddTodoProps {
+  userId: string;
+}
+
+export default function AddTodo({ userId }: AddTodoProps) {
   const { colors } = useTheme();
-  const { user } = useUser();
   const [text, setText] = useState("");
   const addTodo = useMutation(api.todos.addTodo);
   const scale = useSharedValue(1);
@@ -31,7 +33,7 @@ export default function AddTodo() {
   }));
 
   const handleSubmit = async () => {
-    if (text.trim() && user?.id) {
+    if (text.trim() && userId) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       
       // Animate button
@@ -40,7 +42,7 @@ export default function AddTodo() {
         withSpring(1)
       );
 
-      await addTodo({ text: text.trim(), userId: user.id });
+      await addTodo({ text: text.trim(), userId });
       setText("");
       Keyboard.dismiss();
     }

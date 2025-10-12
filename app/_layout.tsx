@@ -1,67 +1,66 @@
 import { Stack, useRouter, useSegments } from "expo-router";
-import { ConvexProvider, ConvexReactClient } from "convex/react";
+import { ConvexProvider, ConvexReactClient, useQuery } from "convex/react";
 import Constants from "expo-constants";
 import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { ThemeProvider } from "../contexts/ThemeContext";
-import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
-import * as SecureStore from "expo-secure-store";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { api } from "../convex/_generated/api";
+import { getUserId } from "../utils/userSession";
 
 // Initialize Convex client
 const convex = new ConvexReactClient(
   Constants.expoConfig?.extra?.convexUrl || process.env.EXPO_PUBLIC_CONVEX_URL!
 );
 
-// Clerk publishable key
-const CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
-
-// Token cache for Clerk
-const tokenCache = {
-  async getToken(key: string) {
-    try {
-      return SecureStore.getItemAsync(key);
-    } catch (err) {
-      return null;
-    }
-  },
-  async saveToken(key: string, value: string) {
-    try {
-      return SecureStore.setItemAsync(key, value);
-    } catch (err) {
-      return;
-    }
-  },
-};
-
 function InitialLayout() {
-  const { isLoaded, isSignedIn } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+  const [userId, setUserId] = useState<string | null>(null);
+
+  // Get user profile to check if onboarding is complete
+  const profile = useQuery(
+    api.profiles.getProfile,
+    userId ? { userId } : "skip"
+  );
 
   useEffect(() => {
-    if (!isLoaded) return;
+    // Get or create user ID
+    getUserId().then(setUserId);
+  }, []);
+
+  useEffect(() => {
+    if (!userId) return;
 
     const inWelcome = segments[0] === "welcome";
+    const inOnboarding = segments[0] === "onboarding";
 
-    if (isSignedIn && inWelcome) {
-      // User is signed in but on welcome screen, redirect to home
-      router.replace("/");
-    } else if (!isSignedIn && !inWelcome) {
-      // User is not signed in and not on welcome, redirect to welcome
-      router.replace("/welcome");
+    // Check if profile exists and has required fields
+    if (profile === undefined) {
+      // Profile is still loading, wait
+      return;
     }
-  }, [isSignedIn, isLoaded]);
 
-  // Show nothing while auth is loading
-  if (!isLoaded) {
-    return null;
-  }
+    const hasCompletedOnboarding = profile && profile.name && profile.hairType;
+
+    if (!hasCompletedOnboarding) {
+      // User hasn't completed onboarding
+      if (!inOnboarding && !inWelcome) {
+        router.replace("/welcome");
+      }
+    } else {
+      // User has completed onboarding, redirect to tabs if on welcome/onboarding
+      if (inWelcome || inOnboarding) {
+        router.replace("/(tabs)/plan");
+      }
+    }
+  }, [userId, profile, segments]);
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="welcome" />
-      <Stack.Screen name="index" />
+      <Stack.Screen name="onboarding" />
+      <Stack.Screen name="(tabs)" />
     </Stack>
   );
 }
@@ -69,17 +68,12 @@ function InitialLayout() {
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ClerkProvider
-        publishableKey={CLERK_PUBLISHABLE_KEY}
-        tokenCache={tokenCache}
-      >
-        <ThemeProvider>
-          <ConvexProvider client={convex}>
-            <StatusBar style="auto" />
-            <InitialLayout />
-          </ConvexProvider>
-        </ThemeProvider>
-      </ClerkProvider>
+      <ThemeProvider>
+        <ConvexProvider client={convex}>
+          <StatusBar style="auto" />
+          <InitialLayout />
+        </ConvexProvider>
+      </ThemeProvider>
     </GestureHandlerRootView>
   );
 }

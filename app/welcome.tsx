@@ -1,87 +1,51 @@
 import React from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import { View, Text, StyleSheet, Pressable, ImageBackground } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useOAuth } from "@clerk/clerk-expo";
-import * as WebBrowser from "expo-web-browser";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
-import { useTheme } from "../contexts/ThemeContext";
-
-// Warm up the browser for OAuth
-WebBrowser.maybeCompleteAuthSession();
+import { useRouter } from "expo-router";
+import { Colors } from "../constants/colors";
 
 export default function WelcomeScreen() {
-  const { colors } = useTheme();
-  const { startOAuthFlow: startGoogleOAuth } = useOAuth({ strategy: "oauth_google" });
+  const router = useRouter();
 
-  const handleGoogleSignIn = async () => {
-    try {
-      const { createdSessionId, setActive } = await startGoogleOAuth();
-
-      if (createdSessionId && setActive) {
-        await setActive({ session: createdSessionId });
-      }
-    } catch (err) {
-      console.error("OAuth error:", err);
-    }
+  const handleGetStarted = () => {
+    router.push("/onboarding");
   };
 
   return (
-    <LinearGradient colors={colors.background} style={styles.container}>
+    <ImageBackground
+      source={require("../assets/home-screen-background.png")}
+      style={styles.container}
+      resizeMode="cover"
+    >
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.content}>
-          {/* Logo/Icon Area */}
-          <Animated.View entering={FadeInUp.delay(200)} style={styles.logoContainer}>
-            <Text style={styles.logo}>💇‍♀️</Text>
-            <Text style={[styles.appName, { color: colors.overlay }]}>
-              Hair Care Routine
-            </Text>
-            <Text style={[styles.tagline, { color: colors.overlay }]}>
-              Beautiful hair starts with beautiful habits
-            </Text>
+          {/* Header Title */}
+          <Animated.View entering={FadeInDown.delay(200)} style={styles.headerContainer}>
+            <Text style={styles.mainTitle}>Beautiful{"\n"}Hair</Text>
+            <Text style={styles.scriptTitle}>Every Day</Text>
           </Animated.View>
 
-          {/* Features */}
-          <Animated.View entering={FadeInDown.delay(400)} style={styles.featuresContainer}>
-            <View style={styles.feature}>
-              <Text style={styles.featureIcon}>💆‍♀️</Text>
-              <Text style={[styles.featureText, { color: colors.overlay }]}>
-                Track your hair care routine
-              </Text>
-            </View>
-            <View style={styles.feature}>
-              <Text style={styles.featureIcon}>✨</Text>
-              <Text style={[styles.featureText, { color: colors.overlay }]}>
-                Get personalized reminders
-              </Text>
-            </View>
-            <View style={styles.feature}>
-              <Text style={styles.featureIcon}>🌟</Text>
-              <Text style={[styles.featureText, { color: colors.overlay }]}>
-                Build healthy hair habits
-              </Text>
-            </View>
-          </Animated.View>
+          {/* Spacer */}
+          <View style={styles.spacer} />
 
-          {/* Sign In Buttons */}
-          <Animated.View entering={FadeInDown.delay(600)} style={styles.buttonContainer}>
+          {/* Bottom Section - CTA */}
+          <Animated.View entering={FadeInUp.delay(800)} style={styles.bottomSection}>
+            {/* Get Started Button */}
             <Pressable
-              onPress={handleGoogleSignIn}
-              style={[styles.button, { backgroundColor: colors.cardBackground }]}
+              onPress={handleGetStarted}
+              style={styles.getStartedButton}
             >
-              <Text style={styles.buttonIcon}>🔐</Text>
-              <Text style={[styles.buttonText, { color: colors.text }]}>
-                Sign in with Google
-              </Text>
+              <Text style={styles.getStartedText}>Get Started</Text>
             </Pressable>
 
-            <Text style={[styles.privacyText, { color: colors.overlay }]}>
-              By continuing, you agree to our Terms of Service and Privacy Policy
+            <Text style={styles.privacyText}>
+              By continuing, you agree to our Terms & Privacy Policy
             </Text>
           </Animated.View>
         </View>
       </SafeAreaView>
-    </LinearGradient>
+    </ImageBackground>
   );
 }
 
@@ -94,71 +58,64 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 32,
-    justifyContent: "space-between",
-    paddingVertical: 40,
+    paddingHorizontal: 20,
+    paddingTop: 40,
+    paddingBottom: 20,
   },
-  logoContainer: {
+  headerContainer: {
     alignItems: "center",
-    marginTop: 60,
-  },
-  logo: {
-    fontSize: 80,
-    marginBottom: 16,
-  },
-  appName: {
-    fontSize: 42,
-    fontWeight: "bold",
-    marginBottom: 8,
-  },
-  tagline: {
-    fontSize: 18,
-    textAlign: "center",
-  },
-  featuresContainer: {
-    gap: 24,
-  },
-  feature: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 16,
-  },
-  featureIcon: {
-    fontSize: 32,
-  },
-  featureText: {
-    fontSize: 18,
-    flex: 1,
-  },
-  buttonContainer: {
-    gap: 16,
     marginBottom: 20,
   },
-  button: {
-    flexDirection: "row",
+  mainTitle: {
+    fontSize: 56,
+    fontWeight: "900",
+    color: Colors.neutral.white,
+    textAlign: "center",
+    lineHeight: 60,
+    letterSpacing: -1,
+    textShadowColor: Colors.shadow.medium,
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+  scriptTitle: {
+    fontSize: 48,
+    fontStyle: "italic",
+    color: Colors.secondary.light, // Golden shine
+    textAlign: "center",
+    marginTop: -10,
+    fontWeight: "300",
+    textShadowColor: Colors.shadow.light,
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+  spacer: {
+    flex: 1,
+  },
+  bottomSection: {
     alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 16,
-    gap: 12,
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    gap: 20,
   },
-  buttonIcon: {
-    fontSize: 24,
+  getStartedButton: {
+    backgroundColor: Colors.neutral.white,
+    paddingVertical: 12,
+    paddingHorizontal: 80,
+    borderRadius: 30,
+    elevation: 8,
+    shadowColor: Colors.shadow.dark,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
   },
-  buttonText: {
-    fontSize: 18,
-    fontWeight: "600",
+  getStartedText: {
+    color: Colors.primary.main, // Sunset Orange
+    fontSize: 20,
+    fontWeight: "bold",
+    textAlign: "center",
   },
   privacyText: {
-    fontSize: 12,
+    fontSize: 11,
+    color: Colors.overlay.medium,
     textAlign: "center",
-    paddingHorizontal: 20,
+    paddingHorizontal: 40,
   },
 });
-

@@ -12,6 +12,7 @@ import { useTheme } from "../contexts/ThemeContext";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import * as Haptics from "expo-haptics";
+import { Colors } from "../constants/colors";
 
 interface ProfileModalProps {
   userId: string;
@@ -53,6 +54,8 @@ export default function ProfileModal({ userId, onClose }: ProfileModalProps) {
   const profile = useQuery(api.profiles.getProfile, { userId });
   const upsertProfile = useMutation(api.profiles.upsertProfile);
 
+  const [name, setName] = useState<string>("");
+  const [age, setAge] = useState<string>("");
   const [hairType, setHairType] = useState<string | undefined>();
   const [porosity, setPorosity] = useState<string | undefined>();
   const [thickness, setThickness] = useState<string | undefined>();
@@ -62,6 +65,8 @@ export default function ProfileModal({ userId, onClose }: ProfileModalProps) {
 
   useEffect(() => {
     if (profile) {
+      setName(profile.name || "");
+      setAge(profile.age?.toString() || "");
       setHairType(profile.hairType);
       setPorosity(profile.porosity);
       setThickness(profile.thickness);
@@ -94,6 +99,8 @@ export default function ProfileModal({ userId, onClose }: ProfileModalProps) {
     
     await upsertProfile({
       userId,
+      name: name || undefined,
+      age: age ? parseInt(age) : undefined,
       hairType: hairType as any,
       porosity: porosity as any,
       thickness: thickness as any,
@@ -121,6 +128,36 @@ export default function ProfileModal({ userId, onClose }: ProfileModalProps) {
         </View>
 
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          {/* Name */}
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              Name
+            </Text>
+            <TextInput
+              style={[styles.textInput, { backgroundColor: colors.primaryLight, color: colors.text, borderColor: colors.border }]}
+              placeholder="Your name"
+              placeholderTextColor={colors.textSecondary}
+              value={name}
+              onChangeText={setName}
+            />
+          </View>
+
+          {/* Age */}
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              Age
+            </Text>
+            <TextInput
+              style={[styles.textInput, { backgroundColor: colors.primaryLight, color: colors.text, borderColor: colors.border }]}
+              placeholder="Your age"
+              placeholderTextColor={colors.textSecondary}
+              value={age}
+              onChangeText={setAge}
+              keyboardType="number-pad"
+              maxLength={2}
+            />
+          </View>
+
           {/* Hair Type */}
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
@@ -320,7 +357,7 @@ export default function ProfileModal({ userId, onClose }: ProfileModalProps) {
         <View style={styles.footer}>
           <Pressable
             onPress={handleSave}
-            style={[styles.saveButton, { backgroundColor: colors.primary }]}
+            style={[styles.saveButton, { backgroundColor: Colors.primary.dark }]}
           >
             <Text style={styles.saveButtonText}>Save Profile</Text>
           </Pressable>
@@ -337,7 +374,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "#00000050",
+    backgroundColor: "rgba(43, 27, 20, 0.50)", // Warm espresso backdrop
     justifyContent: "flex-end",
   },
   container: {
@@ -351,7 +388,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e020",
+    borderBottomColor: "rgba(232, 85, 26, 0.15)", // Warm border
   },
   title: {
     fontSize: 24,
@@ -361,13 +398,13 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#f0f0f020",
+    backgroundColor: "rgba(255, 245, 235, 0.25)", // Warm light
     justifyContent: "center",
     alignItems: "center",
   },
   closeText: {
     fontSize: 20,
-    color: "#666",
+    color: "rgba(107, 90, 70, 0.8)", // Warm gray
   },
   scrollView: {
     padding: 20,
@@ -379,6 +416,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     marginBottom: 12,
+  },
+  textInput: {
+    padding: 16,
+    borderRadius: 12,
+    fontSize: 16,
+    borderWidth: 1,
   },
   optionsGrid: {
     flexDirection: "row",
@@ -442,7 +485,7 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 40,
     borderTopWidth: 1,
-    borderTopColor: "#e0e0e020",
+    borderTopColor: "rgba(232, 85, 26, 0.15)", // Warm border
   },
   saveButton: {
     padding: 18,
@@ -450,7 +493,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   saveButtonText: {
-    color: "#fff",
+    color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "bold",
   },

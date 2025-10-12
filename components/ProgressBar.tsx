@@ -7,6 +7,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useTheme } from "../contexts/ThemeContext";
+import { Colors } from "../constants/colors";
 
 interface ProgressBarProps {
   totalTodos: number;
@@ -32,9 +33,9 @@ export default function ProgressBar({
   }));
 
   const getProgressColor = () => {
-    if (completionRate === 100) return "#4caf50"; // Green when complete
-    if (completionRate >= 50) return colors.primary; // Primary color
-    return "#ff9800"; // Orange when low progress
+    if (completionRate === 100) return Colors.success.main; // Green when complete
+    if (completionRate >= 50) return colors.primary; // Sunset Orange
+    return Colors.secondary.main; // Golden Shine for low progress
   };
 
   const getProgressMessage = () => {

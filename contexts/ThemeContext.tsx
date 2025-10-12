@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Colors } from "../constants/colors";
 
 type ThemeMode = "light" | "dark";
 
@@ -8,6 +9,7 @@ interface ThemeColors {
   cardBackground: string;
   text: string;
   textSecondary: string;
+  textInverse: string;
   border: string;
   primary: string;
   primaryLight: string;
@@ -15,6 +17,7 @@ interface ThemeColors {
   success: string;
   danger: string;
   overlay: string;
+  warning: string;
 }
 
 interface ThemeContextType {
@@ -24,31 +27,35 @@ interface ThemeContextType {
 }
 
 const lightColors: ThemeColors = {
-  background: ["#ff9a9e", "#fecfef", "#fbc2eb"], // Soft pink gradient
-  cardBackground: "#ffffff",
-  text: "#4a4a4a",
-  textSecondary: "#999999",
-  border: "#ffd6e8",
-  primary: "#ff6b9d", // Pink
-  primaryLight: "#ffffff33",
-  completed: "#c4c4c4",
-  success: "#ff85a1", // Rose pink for completed
-  danger: "#ff4081",
-  overlay: "#ffffffdd",
+  background: Colors.gradients.sunrise as readonly [string, string, string], // Warm sunrise gradient
+  cardBackground: Colors.neutral.white,
+  text: Colors.neutral[900],
+  textSecondary: Colors.neutral[600],
+  textInverse: Colors.neutral.white,
+  border: Colors.neutral[200],
+  primary: Colors.primary.dark, // Darker orange for better contrast (#E2551F)
+  primaryLight: Colors.primary[100],
+  completed: Colors.neutral[400],
+  success: Colors.success.main,
+  danger: Colors.error.main,
+  overlay: Colors.neutral[900],
+  warning: Colors.warning.main,
 };
 
 const darkColors: ThemeColors = {
-  background: ["#2c1a3d", "#4a1f5c", "#6b2d7a"], // Deep purple gradient
-  cardBackground: "#3d2651",
-  text: "#fce4ec",
-  textSecondary: "#c4a5cf",
-  border: "#5a3768",
-  primary: "#f48fb1", // Light pink
-  primaryLight: "#ffffff22",
-  completed: "#8e8e8e",
-  success: "#ce93d8", // Lavender for completed
-  danger: "#ff4081",
-  overlay: "#fce4ecdd",
+  background: Colors.gradients.coralEnergy as readonly [string, string, string], // Energetic coral gradient
+  cardBackground: Colors.neutral[400], // Lighter for better readability
+  text: Colors.neutral.black, // Black text for better contrast
+  textSecondary: Colors.neutral[800], // Dark orange for secondary text
+  textInverse: Colors.neutral.white,
+  border: Colors.neutral[500],
+  primary: Colors.primary.light, // Coral Glow
+  primaryLight: Colors.primary[300],
+  completed: Colors.neutral[600],
+  success: Colors.success.dark,
+  danger: Colors.error.dark,
+  overlay: Colors.neutral.black,
+  warning: Colors.warning.light,
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);

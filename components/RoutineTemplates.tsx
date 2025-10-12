@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "#00000050",
+    backgroundColor: "rgba(43, 27, 20, 0.50)", // Warm espresso backdrop
     justifyContent: "flex-end",
   },
   container: {
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
+    borderBottomColor: "rgba(232, 85, 26, 0.15)", // Warm border
   },
   title: {
     fontSize: 24,
@@ -104,13 +104,13 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "rgba(255, 245, 235, 0.25)", // Warm light
     justifyContent: "center",
     alignItems: "center",
   },
   closeText: {
     fontSize: 20,
-    color: "#666",
+    color: "rgba(107, 90, 70, 0.8)", // Warm gray
   },
   scrollView: {
     padding: 20,
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
     borderWidth: 2,
-    backgroundColor: "#ffffff05",
+    backgroundColor: "rgba(255, 245, 235, 0.05)", // Subtle warm tint
   },
   templateHeader: {
     flexDirection: "row",

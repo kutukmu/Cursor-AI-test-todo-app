@@ -18,6 +18,8 @@ export const getProfile = query({
 export const upsertProfile = mutation({
   args: {
     userId: v.string(),
+    name: v.optional(v.string()),
+    age: v.optional(v.number()),
     hairType: v.optional(v.union(
       v.literal("straight"),
       v.literal("wavy"),
@@ -49,6 +51,8 @@ export const upsertProfile = mutation({
     if (existingProfile) {
       // Update existing profile
       await ctx.db.patch(existingProfile._id, {
+        name: args.name,
+        age: args.age,
         hairType: args.hairType,
         hairConcerns: args.hairConcerns,
         hairGoals: args.hairGoals,
@@ -62,6 +66,8 @@ export const upsertProfile = mutation({
       // Create new profile
       const profileId = await ctx.db.insert("profiles", {
         userId: args.userId,
+        name: args.name,
+        age: args.age,
         hairType: args.hairType,
         hairConcerns: args.hairConcerns,
         hairGoals: args.hairGoals,
