@@ -25,8 +25,11 @@ interface SettingItem {
   onPress?: () => void;
 }
 
+const PRIMARY_COLOR = "#f5873d";
+
 export default function SettingsScreen() {
-  const { colors, theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === "dark";
   const [userId, setUserId] = useState<string>("");
   const [showProfile, setShowProfile] = useState(false);
 
@@ -61,6 +64,11 @@ export default function SettingsScreen() {
     );
   };
 
+  const bgColor = isDark ? "#221710" : "#f8f7f5";
+  const textColor = isDark ? "#f8f7f5" : "#181411";
+  const textSecondary = isDark ? "rgba(248, 247, 245, 0.6)" : "#8a7160";
+  const cardBg = isDark ? "#181411" : "#ffffff";
+
   const settings: SettingItem[] = [
     {
       id: "profile",
@@ -86,7 +94,11 @@ export default function SettingsScreen() {
   ];
 
   return (
-    <LinearGradient colors={colors.background} style={styles.container}>
+    <LinearGradient
+      colors={isDark ? [`${PRIMARY_COLOR}4D`, "transparent"] : [`${PRIMARY_COLOR}33`, "transparent"]}
+      style={styles.gradient}
+    >
+      <View style={[styles.container, { backgroundColor: bgColor }]}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView 
           style={styles.scrollView}
@@ -95,10 +107,10 @@ export default function SettingsScreen() {
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={[styles.title, { color: colors.overlay }]}>
+            <Text style={[styles.title, { color: textColor }]}>
               ⚙️ Settings
             </Text>
-            <Text style={[styles.subtitle, { color: colors.overlay }]}>
+            <Text style={[styles.subtitle, { color: textSecondary }]}>
               Manage your preferences
             </Text>
           </View>
@@ -109,18 +121,18 @@ export default function SettingsScreen() {
               <View
                 style={[
                   styles.profileSummary,
-                  { backgroundColor: colors.cardBackground, borderColor: colors.border },
+                  { backgroundColor: cardBg },
                 ]}
               >
                 <View style={styles.profileIcon}>
                   <Text style={styles.profileEmoji}>👤</Text>
                 </View>
                 <View style={styles.profileInfo}>
-                  <Text style={[styles.profileName, { color: colors.text }]}>
+                  <Text style={[styles.profileName, { color: textColor }]}>
                     {profile.name || "User"}
                   </Text>
                   {profile.hairType && (
-                    <Text style={[styles.profileDetail, { color: colors.textSecondary }]}>
+                    <Text style={[styles.profileDetail, { color: textSecondary }]}>
                       {profile.hairType.charAt(0).toUpperCase() + profile.hairType.slice(1)} hair
                       {profile.age && ` • ${profile.age} years old`}
                     </Text>
@@ -128,9 +140,9 @@ export default function SettingsScreen() {
                 </View>
                 <Pressable 
                   onPress={() => setShowProfile(true)}
-                  style={[styles.editButton, { backgroundColor: colors.primaryLight }]}
+                  style={[styles.editButton, { backgroundColor: isDark ? `${PRIMARY_COLOR}33` : `${PRIMARY_COLOR}1A` }]}
                 >
-                  <Text style={[styles.editButtonText, { color: colors.primary }]}>
+                  <Text style={[styles.editButtonText, { color: PRIMARY_COLOR }]}>
                     Edit
                   </Text>
                 </Pressable>
@@ -146,13 +158,13 @@ export default function SettingsScreen() {
                   <View
                     style={[
                       styles.detailCard,
-                      { backgroundColor: colors.cardBackground, borderColor: colors.border },
+                      { backgroundColor: cardBg },
                     ]}
                   >
-                    <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>
+                    <Text style={[styles.detailLabel, { color: textSecondary }]}>
                       Porosity
                     </Text>
-                    <Text style={[styles.detailValue, { color: colors.text }]}>
+                    <Text style={[styles.detailValue, { color: textColor }]}>
                       {profile.porosity.charAt(0).toUpperCase() + profile.porosity.slice(1)}
                     </Text>
                   </View>
@@ -164,13 +176,13 @@ export default function SettingsScreen() {
                   <View
                     style={[
                       styles.detailCard,
-                      { backgroundColor: colors.cardBackground, borderColor: colors.border },
+                      { backgroundColor: cardBg },
                     ]}
                   >
-                    <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>
+                    <Text style={[styles.detailLabel, { color: textSecondary }]}>
                       Thickness
                     </Text>
-                    <Text style={[styles.detailValue, { color: colors.text }]}>
+                    <Text style={[styles.detailValue, { color: textColor }]}>
                       {profile.thickness.charAt(0).toUpperCase() + profile.thickness.slice(1)}
                     </Text>
                   </View>
@@ -182,19 +194,19 @@ export default function SettingsScreen() {
                   <View
                     style={[
                       styles.detailCard,
-                      { backgroundColor: colors.cardBackground, borderColor: colors.border },
+                      { backgroundColor: cardBg },
                     ]}
                   >
-                    <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>
+                    <Text style={[styles.detailLabel, { color: textSecondary }]}>
                       Concerns
                     </Text>
                     <View style={styles.tagsContainer}>
                       {profile.hairConcerns.map((concern, index) => (
                         <View
                           key={index}
-                          style={[styles.tag, { backgroundColor: colors.primaryLight }]}
+                          style={[styles.tag, { backgroundColor: isDark ? `${PRIMARY_COLOR}33` : `${PRIMARY_COLOR}1A` }]}
                         >
-                          <Text style={[styles.tagText, { color: colors.primary }]}>
+                          <Text style={[styles.tagText, { color: PRIMARY_COLOR }]}>
                             {concern}
                           </Text>
                         </View>
@@ -209,19 +221,19 @@ export default function SettingsScreen() {
                   <View
                     style={[
                       styles.detailCard,
-                      { backgroundColor: colors.cardBackground, borderColor: colors.border },
+                      { backgroundColor: cardBg },
                     ]}
                   >
-                    <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>
+                    <Text style={[styles.detailLabel, { color: textSecondary }]}>
                       Goals
                     </Text>
                     <View style={styles.tagsContainer}>
                       {profile.hairGoals.map((goal, index) => (
                         <View
                           key={index}
-                          style={[styles.tag, { backgroundColor: colors.success + "20" }]}
+                          style={[styles.tag, { backgroundColor: "#7DDC7233" }]}
                         >
-                          <Text style={[styles.tagText, { color: colors.success }]}>
+                          <Text style={[styles.tagText, { color: "#7DDC72" }]}>
                             {goal}
                           </Text>
                         </View>
@@ -235,7 +247,7 @@ export default function SettingsScreen() {
 
           {/* Settings List */}
           <View style={styles.settingsSection}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            <Text style={[styles.sectionTitle, { color: textColor }]}>
               App Settings
             </Text>
             {settings.map((setting, index) => (
@@ -247,14 +259,14 @@ export default function SettingsScreen() {
                   onPress={setting.onPress}
                   style={[
                     styles.settingItem,
-                    { backgroundColor: colors.cardBackground, borderColor: colors.border },
+                    { backgroundColor: cardBg },
                   ]}
                 >
                   <Text style={styles.settingIcon}>{setting.icon}</Text>
-                  <Text style={[styles.settingTitle, { color: colors.text }]}>
+                  <Text style={[styles.settingTitle, { color: textColor }]}>
                     {setting.title}
                   </Text>
-                  <Text style={styles.settingArrow}>›</Text>
+                  <Text style={[styles.settingArrow, { color: textSecondary }]}>›</Text>
                 </Pressable>
               </Animated.View>
             ))}
@@ -262,10 +274,10 @@ export default function SettingsScreen() {
 
           {/* App Info */}
           <View style={styles.appInfo}>
-            <Text style={[styles.appInfoText, { color: colors.textSecondary }]}>
+            <Text style={[styles.appInfoText, { color: textSecondary }]}>
               Hair Care Routine App v1.0
             </Text>
-            <Text style={[styles.appInfoText, { color: colors.textSecondary }]}>
+            <Text style={[styles.appInfoText, { color: textSecondary }]}>
               Made with 💖 for healthy hair
             </Text>
           </View>
@@ -279,11 +291,15 @@ export default function SettingsScreen() {
           />
         )}
       </SafeAreaView>
+    </View>
     </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
   container: {
     flex: 1,
   },
@@ -315,7 +331,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     padding: 16,
     borderRadius: 16,
-    borderWidth: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   profileIcon: {
     width: 60,
@@ -354,7 +374,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     padding: 16,
     borderRadius: 12,
-    borderWidth: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   detailLabel: {
     fontSize: 12,
@@ -395,7 +419,11 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
-    borderWidth: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   settingIcon: {
     fontSize: 24,
@@ -408,7 +436,6 @@ const styles = StyleSheet.create({
   },
   settingArrow: {
     fontSize: 24,
-    color: "#999",
   },
   appInfo: {
     alignItems: "center",

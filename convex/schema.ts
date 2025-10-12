@@ -50,5 +50,29 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index("by_user", ["userId"]),
+  
+  remedies: defineTable({
+    title: v.string(),
+    steps: v.number(),
+    duration: v.string(),
+    category: v.string(), // e.g., "growth", "moisture", "protection", "styling"
+    gradientStart: v.string(),
+    gradientEnd: v.string(),
+    description: v.optional(v.string()),
+    ingredients: v.optional(v.array(v.string())),
+    instructions: v.optional(v.array(v.string())),
+    createdAt: v.number(),
+  })
+    .index("by_category", ["category"])
+    .index("by_creation", ["createdAt"]),
+  
+  userFavorites: defineTable({
+    userId: v.string(),
+    remedyId: v.id("remedies"),
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_remedy", ["remedyId"])
+    .index("by_user_and_remedy", ["userId", "remedyId"]),
 });
 

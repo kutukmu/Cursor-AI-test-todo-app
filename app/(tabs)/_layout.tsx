@@ -15,20 +15,21 @@ export default function TabLayout() {
           backgroundColor: isDark ? "rgba(34, 23, 16, 0.8)" : "rgba(248, 247, 245, 0.8)",
           borderTopWidth: 1,
           borderTopColor: isDark ? "rgba(245, 135, 61, 0.3)" : "rgba(245, 135, 61, 0.2)",
-          paddingBottom: Platform.OS === "ios" ? 35 : 25,
-          paddingTop: 16,
-          height: Platform.OS === "ios" ? 105 : 95,
+          paddingBottom: Platform.OS === "ios" ? 40 : 32,
+          paddingTop: 20,
+          height: Platform.OS === "ios" ? 115 : 105,
         },
         tabBarActiveTintColor: "#f5873d",
         tabBarInactiveTintColor: isDark ? "rgba(248, 247, 245, 0.6)" : "#8a7160",
         tabBarLabelStyle: {
-          fontSize: 14,
+          fontSize: 12,
           fontWeight: "700",
-          marginTop: 6,
-          marginBottom: 4,
+          marginTop: 8,
+          marginBottom: 0,
         },
         tabBarIconStyle: {
-          marginTop: 6,
+          marginTop: 0,
+          marginBottom: 0,
         },
       }}
     >
@@ -36,7 +37,7 @@ export default function TabLayout() {
         name="plan"
         options={{
           title: "Plan",
-          tabBarIcon: ({ color, focused }) => (
+          tabBarIcon: ({ color }: { color: string; focused: boolean }) => (
             <MaterialIcons name="calendar-today" size={24} color={color} />
           ),
         }}
@@ -45,7 +46,7 @@ export default function TabLayout() {
         name="discover"
         options={{
           title: "Discover",
-          tabBarIcon: ({ color, focused }) => (
+          tabBarIcon: ({ color }: { color: string; focused: boolean }) => (
             <MaterialIcons name="explore" size={24} color={color} />
           ),
         }}
@@ -54,7 +55,7 @@ export default function TabLayout() {
         name="progress"
         options={{
           title: "Progress",
-          tabBarIcon: ({ color, focused }) => (
+          tabBarIcon: ({ color }: { color: string; focused: boolean }) => (
             <MaterialIcons name="leaderboard" size={24} color={color} />
           ),
         }}
@@ -63,7 +64,7 @@ export default function TabLayout() {
         name="settings"
         options={{
           title: "Settings",
-          tabBarIcon: ({ color, focused }) => (
+          tabBarIcon: ({ color }: { color: string; focused: boolean }) => (
             <MaterialIcons name="settings" size={24} color={color} />
           ),
         }}

@@ -15,9 +15,11 @@ import { api } from "../../convex/_generated/api";
 import { getUserId } from "../../utils/userSession";
 
 const { width } = Dimensions.get("window");
+const PRIMARY_COLOR = "#f5873d";
 
 export default function ProgressScreen() {
-  const { colors } = useTheme();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const [userId, setUserId] = useState<string>("");
 
   useEffect(() => {
@@ -35,15 +37,27 @@ export default function ProgressScreen() {
   // Calculate streak (simplified - just showing example)
   const currentStreak = 5; // This would be calculated based on actual completion dates
 
+  const bgColor = isDark ? "#221710" : "#f8f7f5";
+  const textColor = isDark ? "#f8f7f5" : "#181411";
+  const textSecondary = isDark ? "rgba(248, 247, 245, 0.6)" : "#8a7160";
+  const cardBg = isDark ? "#181411" : "#ffffff";
+  const successColor = "#7DDC72";
+  const warningColor = "#FFAA33";
+  const dangerColor = "#FF5A4F";
+
   const stats = [
-    { label: "Total Tasks", value: totalTodos, icon: "📋", color: colors.primary },
-    { label: "Completed", value: completedTodos, icon: "✅", color: colors.success },
-    { label: "In Progress", value: activeTodos, icon: "⏳", color: colors.warning },
-    { label: "Current Streak", value: `${currentStreak} days`, icon: "🔥", color: colors.danger },
+    { label: "Total Tasks", value: totalTodos, icon: "📋", color: PRIMARY_COLOR },
+    { label: "Completed", value: completedTodos, icon: "✅", color: successColor },
+    { label: "In Progress", value: activeTodos, icon: "⏳", color: warningColor },
+    { label: "Current Streak", value: `${currentStreak} days`, icon: "🔥", color: dangerColor },
   ];
 
   return (
-    <LinearGradient colors={colors.background} style={styles.container}>
+    <LinearGradient
+      colors={isDark ? [`${PRIMARY_COLOR}4D`, "transparent"] : [`${PRIMARY_COLOR}33`, "transparent"]}
+      style={styles.gradient}
+    >
+      <View style={[styles.container, { backgroundColor: bgColor }]}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView 
           style={styles.scrollView}
@@ -52,28 +66,36 @@ export default function ProgressScreen() {
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={[styles.title, { color: colors.overlay }]}>
+            <Text style={[styles.title, { color: textColor }]}>
               📊 Progress
             </Text>
-            <Text style={[styles.subtitle, { color: colors.overlay }]}>
+            <Text style={[styles.subtitle, { color: textSecondary }]}>
               Track your hair care journey
             </Text>
           </View>
 
-          {/* Completion Circle */}
+          {/* Completion Progress Bar */}
           <Animated.View entering={FadeInDown.delay(100)}>
-            <View
-              style={[
-                styles.completionCircle,
-                { backgroundColor: colors.cardBackground, borderColor: colors.border },
-              ]}
-            >
-              <Text style={[styles.completionPercent, { color: colors.primary }]}>
-                {Math.round(completionRate)}%
-              </Text>
-              <Text style={[styles.completionLabel, { color: colors.textSecondary }]}>
-                Completion Rate
-              </Text>
+            <View style={styles.completionSection}>
+              <View style={styles.progressHeader}>
+                <Text style={[styles.progressLabel, { color: textColor }]}>
+                  Overall Completion
+                </Text>
+                <Text style={[styles.progressPercent, { color: PRIMARY_COLOR }]}>
+                  {Math.round(completionRate)}%
+                </Text>
+              </View>
+              <View style={[styles.progressBarBg, { backgroundColor: isDark ? `${PRIMARY_COLOR}33` : `${PRIMARY_COLOR}1A` }]}>
+                <View
+                  style={[
+                    styles.progressBarFill,
+                    { 
+                      backgroundColor: PRIMARY_COLOR,
+                      width: `${completionRate}%`
+                    },
+                  ]}
+                />
+              </View>
             </View>
           </Animated.View>
 
@@ -88,14 +110,14 @@ export default function ProgressScreen() {
                 <View
                   style={[
                     styles.statCard,
-                    { backgroundColor: colors.cardBackground, borderColor: colors.border },
+                    { backgroundColor: cardBg },
                   ]}
                 >
                   <Text style={styles.statIcon}>{stat.icon}</Text>
                   <Text style={[styles.statValue, { color: stat.color }]}>
                     {stat.value}
                   </Text>
-                  <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+                  <Text style={[styles.statLabel, { color: textSecondary }]}>
                     {stat.label}
                   </Text>
                 </View>
@@ -107,7 +129,7 @@ export default function ProgressScreen() {
           {profile?.hairGoals && profile.hairGoals.length > 0 && (
             <Animated.View entering={FadeInDown.delay(600)}>
               <View style={styles.goalsSection}>
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                <Text style={[styles.sectionTitle, { color: textColor }]}>
                   Your Hair Goals
                 </Text>
                 {profile.hairGoals.map((goal, index) => (
@@ -115,21 +137,21 @@ export default function ProgressScreen() {
                     key={index}
                     style={[
                       styles.goalCard,
-                      { backgroundColor: colors.cardBackground, borderColor: colors.border },
+                      { backgroundColor: cardBg },
                     ]}
                   >
                     <View style={styles.goalHeader}>
-                      <Text style={[styles.goalText, { color: colors.text }]}>
+                      <Text style={[styles.goalText, { color: textColor }]}>
                         {goal}
                       </Text>
                       <Text style={styles.goalIcon}>🎯</Text>
                     </View>
-                    <View style={[styles.progressBar, { backgroundColor: colors.border }]}>
+                    <View style={[styles.progressBar, { backgroundColor: isDark ? `${PRIMARY_COLOR}33` : `${PRIMARY_COLOR}1A` }]}>
                       <View
                         style={[
                           styles.progressFill,
                           { 
-                            backgroundColor: colors.primary,
+                            backgroundColor: PRIMARY_COLOR,
                             width: `${Math.random() * 100}%` // This would be actual progress
                           },
                         ]}
@@ -146,25 +168,29 @@ export default function ProgressScreen() {
             <View
               style={[
                 styles.motivationCard,
-                { backgroundColor: colors.primaryLight, borderColor: colors.primary },
+                { backgroundColor: isDark ? `${PRIMARY_COLOR}33` : `${PRIMARY_COLOR}1A`, borderColor: PRIMARY_COLOR },
               ]}
             >
               <Text style={styles.motivationIcon}>💪</Text>
-              <Text style={[styles.motivationTitle, { color: colors.text }]}>
+              <Text style={[styles.motivationTitle, { color: textColor }]}>
                 Keep Going!
               </Text>
-              <Text style={[styles.motivationText, { color: colors.textSecondary }]}>
+              <Text style={[styles.motivationText, { color: textSecondary }]}>
                 You're doing great, {profile?.name || "beauty"}! Consistency is key to healthy hair.
               </Text>
             </View>
           </Animated.View>
         </ScrollView>
       </SafeAreaView>
+    </View>
     </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
   container: {
     flex: 1,
   },
@@ -189,23 +215,32 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
   },
-  completionCircle: {
-    width: width * 0.5,
-    height: width * 0.5,
-    borderRadius: width * 0.25,
-    alignSelf: "center",
-    justifyContent: "center",
-    alignItems: "center",
-    marginVertical: 24,
-    borderWidth: 8,
+  completionSection: {
+    marginHorizontal: 24,
+    marginBottom: 24,
   },
-  completionPercent: {
-    fontSize: 48,
+  progressHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  progressLabel: {
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  progressPercent: {
+    fontSize: 24,
     fontWeight: "bold",
   },
-  completionLabel: {
-    fontSize: 14,
-    marginTop: 4,
+  progressBarBg: {
+    height: 12,
+    borderRadius: 9999,
+    overflow: "hidden",
+  },
+  progressBarFill: {
+    height: "100%",
+    borderRadius: 9999,
   },
   statsGrid: {
     flexDirection: "row",
@@ -220,7 +255,11 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 16,
     alignItems: "center",
-    borderWidth: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   statIcon: {
     fontSize: 32,
@@ -248,7 +287,11 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
-    borderWidth: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   goalHeader: {
     flexDirection: "row",

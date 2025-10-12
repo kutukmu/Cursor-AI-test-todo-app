@@ -5,318 +5,367 @@ import {
   StyleSheet,
   ScrollView,
   Pressable,
+  Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useTheme } from "../../contexts/ThemeContext";
-import { useQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
 import { getUserId } from "../../utils/userSession";
+import { MaterialIcons } from "@expo/vector-icons";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import { Id } from "../../convex/_generated/dataModel";
+import { useRouter } from "expo-router";
 
-interface HairTip {
-  id: string;
+const { width } = Dimensions.get("window");
+
+// Soft color palette
+const COLORS = {
+  primary: "#F5A8A2",
+  secondary: "#FCE2DA",
+  accent: "#B8E4C9",
+  textPrimary: "#2E2A27",
+  textSecondary: "#6F6B68",
+  surface: "#FFFFFF",
+  backgroundStart: "#FFF6F3",
+  backgroundEnd: "#FFE8E0",
+};
+
+interface Concern {
+  id: number;
   title: string;
-  description: string;
+  remediesCount: number;
   icon: string;
-  category: string;
 }
 
-const hairTips: HairTip[] = [
-  {
-    id: "1",
-    title: "Deep Conditioning",
-    description: "Use a deep conditioner once a week to restore moisture and strengthen your hair.",
-    icon: "💆‍♀️",
-    category: "Moisture",
-  },
-  {
-    id: "2",
-    title: "Protective Styling",
-    description: "Try protective styles like braids or twists to minimize damage and promote growth.",
-    icon: "💇‍♀️",
-    category: "Protection",
-  },
-  {
-    id: "3",
-    title: "Trim Regularly",
-    description: "Get your ends trimmed every 8-12 weeks to prevent split ends from traveling up.",
-    icon: "✂️",
-    category: "Maintenance",
-  },
-  {
-    id: "4",
-    title: "Silk Pillowcase",
-    description: "Sleep on a silk or satin pillowcase to reduce friction and prevent breakage.",
-    icon: "🛏️",
-    category: "Protection",
-  },
-  {
-    id: "5",
-    title: "Heat Protection",
-    description: "Always use a heat protectant spray before using hot tools to prevent damage.",
-    icon: "🔥",
-    category: "Styling",
-  },
-  {
-    id: "6",
-    title: "Scalp Massage",
-    description: "Massage your scalp for 5 minutes daily to stimulate blood flow and promote growth.",
-    icon: "💆",
-    category: "Growth",
-  },
+interface Collection {
+  id: number;
+  title: string;
+  color: string;
+}
+
+const concerns: Concern[] = [
+  { id: 1, title: "Dry Scalp", remediesCount: 8, icon: "water-drop" },
+  { id: 2, title: "Hair Fall", remediesCount: 12, icon: "spa" },
+  { id: 3, title: "Frizz Control", remediesCount: 10, icon: "auto-fix-high" },
+  { id: 4, title: "Split Ends", remediesCount: 7, icon: "content-cut" },
+];
+
+const collections: Collection[] = [
+  { id: 1, title: "Ayurvedic Hair Rituals", color: "#B8E4C9" },
+  { id: 2, title: "DIY Hair Masks", color: "#FCE2DA" },
+  { id: 3, title: "Essential Oils & Herbs", color: "#B8E4C9" },
+  { id: 4, title: "Seasonal Hair Care", color: "#FCE2DA" },
 ];
 
 export default function DiscoverScreen() {
-  const { colors } = useTheme();
+  const router = useRouter();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const [userId, setUserId] = useState<string>("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("All");
-
+  
   useEffect(() => {
     getUserId().then(setUserId);
   }, []);
 
-  const profile = useQuery(api.profiles.getProfile, userId ? { userId } : "skip");
+  // Fetch remedies from Convex
+  const remedies = useQuery(api.remedies.getRemedies);
+  const userFavorites = useQuery(
+    api.remedies.getUserFavorites,
+    userId ? { userId } : "skip"
+  );
+  
+  // Mutations for favorites
+  const addToFavorites = useMutation(api.remedies.addToFavorites);
+  const removeFromFavorites = useMutation(api.remedies.removeFromFavorites);
 
-  const categories = ["All", "Moisture", "Protection", "Growth", "Styling", "Maintenance"];
+  // Check if a remedy is favorited
+  const isFavorited = (remedyId: Id<"remedies">) => {
+    return userFavorites?.some((fav) => fav._id === remedyId) || false;
+  };
 
-  const filteredTips = selectedCategory === "All" 
-    ? hairTips 
-    : hairTips.filter(tip => tip.category === selectedCategory);
+  const toggleFavorite = async (remedyId: Id<"remedies">) => {
+    if (!userId) return;
+    
+    if (isFavorited(remedyId)) {
+      await removeFromFavorites({ userId, remedyId });
+    } else {
+      await addToFavorites({ userId, remedyId });
+    }
+  };
 
   return (
-    <LinearGradient colors={colors.background} style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.contentWrapper}>
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={[styles.title, { color: colors.overlay }]}>
-              ✨ Discover
-            </Text>
-            <Text style={[styles.subtitle, { color: colors.overlay }]}>
-              Tips & tricks for your hair type
-            </Text>
-          </View>
-
-          {/* Category Filter */}
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            style={styles.categoryScroll}
-            contentContainerStyle={styles.categoryContainer}
-          >
-            {categories.map((category) => (
-              <Pressable
-                key={category}
-                onPress={() => setSelectedCategory(category)}
-                style={[
-                  styles.categoryChip,
-                  { 
-                    backgroundColor: selectedCategory === category 
-                      ? colors.primary 
-                      : colors.cardBackground,
-                    borderColor: colors.border,
-                  },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.categoryText,
-                    { 
-                      color: selectedCategory === category 
-                        ? colors.textInverse 
-                        : colors.text,
-                    },
-                  ]}
-                >
-                  {category}
-                </Text>
-              </Pressable>
-            ))}
-          </ScrollView>
-
-          {/* Tips List */}
-          <ScrollView 
-            style={styles.tipsScroll}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.tipsContainer}
-          >
-            {filteredTips.map((tip, index) => (
-              <Animated.View
-                key={tip.id}
-                entering={FadeInDown.delay(index * 100)}
-              >
-                <View
-                  style={[
-                    styles.tipCard,
-                    { 
-                      backgroundColor: colors.cardBackground,
-                      borderColor: colors.border,
-                    },
-                  ]}
-                >
-                  <View style={styles.tipHeader}>
-                    <Text style={styles.tipIcon}>{tip.icon}</Text>
-                    <View style={styles.tipHeaderText}>
-                      <Text style={[styles.tipTitle, { color: colors.text }]}>
-                        {tip.title}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.tipCategory,
-                          { 
-                            color: colors.primary,
-                            backgroundColor: colors.primaryLight,
-                          },
-                        ]}
-                      >
-                        {tip.category}
-                      </Text>
+    <LinearGradient colors={[COLORS.backgroundStart, COLORS.backgroundEnd]} style={styles.gradient}>
+      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+          {/* Target Concerns Section */}
+          <Animated.View entering={FadeInDown.delay(100)} style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Target Concerns</Text>
+              <Text style={styles.sectionSubtitle}>Choose your hair goal.</Text>
+            </View>
+            <View style={styles.concernsGrid}>
+              {concerns.map((concern, index) => (
+                <Animated.View key={concern.id} entering={FadeInDown.delay(200 + index * 50)}>
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.concernCard,
+                      { opacity: pressed ? 0.9 : 1 },
+                    ]}
+                  >
+                    <View style={[styles.concernImageContainer, { backgroundColor: `${COLORS.secondary}80` }]}>
+                      <MaterialIcons name={concern.icon as any} size={50} color={COLORS.primary} />
                     </View>
-                  </View>
-                  <Text style={[styles.tipDescription, { color: colors.textSecondary }]}>
-                    {tip.description}
-                  </Text>
-                </View>
-              </Animated.View>
-            ))}
+                    <Text style={styles.concernTitle}>{concern.title}</Text>
+                    <Text style={styles.concernSubtitle}>{concern.remediesCount} remedies</Text>
+                  </Pressable>
+                </Animated.View>
+              ))}
+            </View>
+          </Animated.View>
 
-            {/* Personalized Recommendation */}
-            {profile?.hairType && (
-              <Animated.View entering={FadeInDown.delay(600)}>
-                <View
-                  style={[
-                    styles.recommendationCard,
-                    { 
-                      backgroundColor: colors.primaryLight,
-                      borderColor: colors.primary,
-                    },
+          {/* Featured Collections Section */}
+          <Animated.View entering={FadeInDown.delay(400)} style={styles.section}>
+            <View style={[styles.sectionHeader, styles.sectionHeaderRow]}>
+              <Text style={styles.sectionTitle}>Featured Collections</Text>
+              <Pressable>
+                <Text style={[styles.seeAllText, { color: COLORS.primary }]}>All →</Text>
+              </Pressable>
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.collectionsScroll}
+              snapToInterval={width * 0.5}
+              decelerationRate="fast"
+            >
+              {collections.map((collection) => (
+                <Pressable
+                  key={collection.id}
+                  style={({ pressed }) => [
+                    styles.collectionCard,
+                    { backgroundColor: `${collection.color}50`, opacity: pressed ? 0.9 : 1 },
                   ]}
                 >
-                  <Text style={styles.recommendationIcon}>💡</Text>
-                  <Text style={[styles.recommendationTitle, { color: colors.text }]}>
-                    For Your Hair Type
-                  </Text>
-                  <Text style={[styles.recommendationText, { color: colors.textSecondary }]}>
-                    Based on your {profile.hairType} hair, we recommend focusing on{" "}
-                    {profile.hairType === "curly" || profile.hairType === "coily" 
-                      ? "moisture and definition" 
-                      : "volume and shine"}.
-                  </Text>
-                </View>
-              </Animated.View>
-            )}
-          </ScrollView>
-        </View>
+                  <View style={styles.collectionImage}>
+                    <MaterialIcons name="nature-people" size={60} color={COLORS.textPrimary} />
+                  </View>
+                  <Text style={styles.collectionTitle}>{collection.title}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </Animated.View>
+
+          {/* Popular Remedies Section */}
+          <Animated.View entering={FadeInDown.delay(600)} style={styles.section}>
+            <View style={[styles.sectionHeader, styles.sectionHeaderRow]}>
+              <Text style={styles.sectionTitle}>Popular Remedies 🌿</Text>
+            </View>
+           
+            <View style={styles.remediesContainer}>
+              {!remedies ? (
+                <Text style={[styles.loadingText, { color: COLORS.textSecondary }]}>
+                  Loading remedies...
+                </Text>
+              ) : remedies.length === 0 ? (
+                <Text style={[styles.emptyText, { color: COLORS.textSecondary }]}>
+                  No remedies available yet. Check back soon!
+                </Text>
+              ) : (
+                remedies.map((remedy, index) => (
+                  <Animated.View key={remedy._id} entering={FadeInDown.delay(700 + index * 50)}>
+                    <Pressable
+                      onPress={() => router.push(`/remedy/${remedy._id}` as any)}
+                      style={({ pressed }) => [
+                        styles.remedyCard,
+                        { opacity: pressed ? 0.95 : 1 },
+                      ]}
+                    >
+                      <LinearGradient
+                        colors={[remedy.gradientStart, remedy.gradientEnd]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        style={styles.remedyGradient}
+                      >
+                        <View style={styles.remedyContent}>
+                          <Text style={styles.remedyTitle}>{remedy.title}</Text>
+                          <Text style={styles.remedyDuration}>
+                            {remedy.steps} steps • {remedy.duration}
+                          </Text>
+                        </View>
+                        <Pressable
+                          onPress={() => toggleFavorite(remedy._id)}
+                          style={styles.favoriteButton}
+                        >
+                          <MaterialIcons
+                            name={isFavorited(remedy._id) ? "favorite" : "favorite-border"}
+                            size={24}
+                            color="#FFFFFF"
+                          />
+                        </Pressable>
+                      </LinearGradient>
+                    </Pressable>
+                  </Animated.View>
+                ))
+              )}
+            </View>
+          </Animated.View>
+        </ScrollView>
       </SafeAreaView>
     </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  gradient: {
     flex: 1,
   },
   safeArea: {
     flex: 1,
   },
-  contentWrapper: {
-    flex: 1,
+  scrollContent: {
+    paddingTop: 32,
+    paddingBottom: 140,
   },
-  header: {
-    padding: 24,
-    paddingBottom: 16,
+  section: {
+    marginBottom: 32,
   },
-  title: {
-    fontSize: 36,
-    fontWeight: "bold",
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 16,
-  },
-  categoryScroll: {
-    maxHeight: 50,
-  },
-  categoryContainer: {
+  sectionHeader: {
     paddingHorizontal: 24,
-    paddingVertical: 8,
-    gap: 8,
+    marginBottom: 16,
   },
-  categoryChip: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    marginRight: 8,
-    borderWidth: 1,
+  sectionHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
-  categoryText: {
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: COLORS.textPrimary,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginTop: 4,
+  },
+  seeAllText: {
     fontSize: 14,
     fontWeight: "600",
   },
-  tipsScroll: {
-    flex: 1,
-  },
-  tipsContainer: {
-    padding: 24,
-    paddingTop: 16,
-    paddingBottom: 100,
-  },
-  tipCard: {
-    padding: 20,
-    borderRadius: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-  },
-  tipHeader: {
+  // Target Concerns
+  concernsGrid: {
+    paddingHorizontal: 24,
     flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 24,
+    justifyContent: "space-between",
+  },
+  concernCard: {
+    width: (width - 72) / 2,
+    alignItems: "center",
+  },
+  concernImageContainer: {
+    width: 128,
+    height: 128,
+    borderRadius: 64,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  concernTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.textPrimary,
+    textAlign: "center",
+    marginBottom: 4,
+  },
+  concernSubtitle: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    textAlign: "center",
+  },
+  // Featured Collections
+  collectionsScroll: {
+    paddingLeft: 24,
+    paddingRight: 24,
+    gap: 16,
+  },
+  collectionCard: {
+    width: 192,
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  collectionImage: {
+    height: 128,
+    borderRadius: 8,
+    justifyContent: "center",
     alignItems: "center",
     marginBottom: 12,
   },
-  tipIcon: {
-    fontSize: 40,
-    marginRight: 16,
+  collectionTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: COLORS.textPrimary,
   },
-  tipHeaderText: {
+  // Popular Remedies
+  remediesContainer: {
+    paddingHorizontal: 24,
+    gap: 16,
+    marginTop: 16,
+  },
+  remedyCard: {
+    borderRadius: 12,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  remedyGradient: {
+    padding: 16,
+    minHeight: 100,
+    justifyContent: "center",
+  },
+  remedyContent: {
     flex: 1,
   },
-  tipTitle: {
+  remedyTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    marginBottom: 4,
+    color: "#FFFFFF",
+    marginBottom: 6,
   },
-  tipCategory: {
-    fontSize: 12,
-    fontWeight: "600",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    alignSelf: "flex-start",
-  },
-  tipDescription: {
+  remedyDuration: {
     fontSize: 14,
-    lineHeight: 20,
+    color: "rgba(255, 255, 255, 0.9)",
   },
-  recommendationCard: {
-    padding: 20,
-    borderRadius: 16,
-    borderWidth: 2,
-    marginTop: 8,
-    alignItems: "center",
+  favoriteButton: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    padding: 4,
   },
-  recommendationIcon: {
-    fontSize: 48,
-    marginBottom: 8,
-  },
-  recommendationTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 8,
-  },
-  recommendationText: {
-    fontSize: 14,
-    lineHeight: 20,
+  loadingText: {
+    fontSize: 16,
     textAlign: "center",
+    padding: 40,
+  },
+  emptyText: {
+    fontSize: 16,
+    textAlign: "center",
+    padding: 40,
   },
 });
-

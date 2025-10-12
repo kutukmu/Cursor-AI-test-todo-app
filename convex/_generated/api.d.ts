@@ -14,6 +14,8 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as profiles from "../profiles.js";
+import type * as remedies from "../remedies.js";
+import type * as seedRemedies from "../seedRemedies.js";
 import type * as todos from "../todos.js";
 
 /**
@@ -26,6 +28,8 @@ import type * as todos from "../todos.js";
  */
 declare const fullApi: ApiFromModules<{
   profiles: typeof profiles;
+  remedies: typeof remedies;
+  seedRemedies: typeof seedRemedies;
   todos: typeof todos;
 }>;
 export declare const api: FilterApi<
