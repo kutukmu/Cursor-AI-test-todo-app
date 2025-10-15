@@ -20,6 +20,7 @@ import Animated, {
   withSequence,
 } from "react-native-reanimated";
 import { useRouter } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 
 const { width, height } = Dimensions.get("window");
 
@@ -57,6 +58,101 @@ const AnimatedSparkle = ({ delay = 0, style }: { delay?: number; style?: any }) 
   }));
 
   return <Animated.View style={[styles.sparkle, style, animatedStyle]} />;
+};
+
+// Pulsing Button Component
+const PulsingNeonButton = ({ 
+  onPress, 
+  text, 
+  textStyle 
+}: { 
+  onPress: () => void; 
+  text: string; 
+  textStyle: any;
+}) => {
+  const pulseScale = useSharedValue(1);
+  const glowIntensity = useSharedValue(1);
+
+  useEffect(() => {
+    // Pulsing scale animation
+    pulseScale.value = withRepeat(
+      withSequence(
+        withTiming(1.02, { duration: 1200 }),
+        withTiming(1, { duration: 1200 })
+      ),
+      -1,
+      false
+    );
+
+    // Glow intensity animation
+    glowIntensity.value = withRepeat(
+      withSequence(
+        withTiming(1.3, { duration: 1200 }),
+        withTiming(1, { duration: 1200 })
+      ),
+      -1,
+      false
+    );
+  }, []);
+
+  const pulseAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pulseScale.value }],
+  }));
+
+  const glowAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: 0.3 * glowIntensity.value,
+  }));
+
+  const glowMiddleAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: 0.4 * glowIntensity.value,
+  }));
+
+  return (
+    <Pressable onPress={onPress}>
+      {({ pressed }) => (
+        <Animated.View 
+          style={[
+            styles.neonButtonWrapper, 
+            pressed && styles.neonButtonWrapperPressed,
+            pulseAnimatedStyle
+          ]}
+        >
+          {/* Outer glow layers */}
+          <Animated.View 
+            style={[
+              styles.glowOuter, 
+              pressed && styles.glowOuterPressed,
+              glowAnimatedStyle
+            ]} 
+          />
+          <Animated.View 
+            style={[
+              styles.glowMiddle, 
+              pressed && styles.glowMiddlePressed,
+              glowMiddleAnimatedStyle
+            ]} 
+          />
+          
+          {/* Button gradient */}
+          <LinearGradient
+            colors={["#FF6B00", "#FF9B42"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={[styles.nextButton, pressed && styles.nextButtonPressed]}
+          >
+            {/* Inner glossy highlight */}
+            <LinearGradient
+              colors={["rgba(255, 255, 255, 0.4)", "rgba(255, 255, 255, 0)"]}
+              start={{ x: 0.5, y: 0 }}
+              end={{ x: 0.5, y: 0.5 }}
+              style={styles.glossOverlay}
+            />
+            <Text style={textStyle}>{text}</Text>
+          </LinearGradient>
+        </Animated.View>
+      )}
+    </Pressable>
+  );
 };
 
 // Onboarding slide data
@@ -194,13 +290,17 @@ export default function WelcomeScreen() {
         <SafeAreaView style={styles.buttonSafeArea} edges={["bottom"]}>
           <View style={styles.buttonContainer}>
             {currentIndex < slides.length - 1 ? (
-              <Pressable onPress={handleNext} style={styles.nextButton}>
-                <Text style={styles.nextButtonText}>Next</Text>
-              </Pressable>
+              <PulsingNeonButton 
+                onPress={handleNext}
+                text="Next"
+                textStyle={styles.nextButtonText}
+              />
             ) : (
-              <Pressable onPress={handleGetStarted} style={styles.continueButton}>
-                <Text style={styles.continueButtonText}>Continue</Text>
-              </Pressable>
+              <PulsingNeonButton 
+                onPress={handleGetStarted}
+                text="Continue"
+                textStyle={styles.continueButtonText}
+              />
             )}
           </View>
         </SafeAreaView>
@@ -289,17 +389,20 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     textAlign: "center",
     maxWidth: 340,
-    lineHeight: 30,
+    lineHeight: 40,
     textShadowColor: "rgba(0, 0, 0, 0.2)",
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
+    marginBottom:6
   },
   fixedBottomSection: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: "#130b1d",
+    backgroundColor: "#0D0C16",
+    borderTopEndRadius: 100,
+    borderTopStartRadius: 100,
   },
   buttonSafeArea: {
     paddingTop: 20,
@@ -324,38 +427,98 @@ const styles = StyleSheet.create({
   buttonContainer: {
     width: "100%",
     paddingHorizontal: 32,
-    paddingBottom: 20,
+    paddingBottom: 30,
   },
+  // Neon button wrapper for positioning glow layers
+  neonButtonWrapper: {
+    position: "relative",
+    width: "100%",
+  },
+  neonButtonWrapperPressed: {
+    transform: [{ scale: 0.98 }],
+  },
+  // Outer glow layer - soft orange neon effect
+  glowOuter: {
+    position: "absolute",
+    top: -8,
+    left: -8,
+    right: -8,
+    bottom: -8,
+    borderRadius: 9999,
+    backgroundColor: "#FF6B00",
+    opacity: 0.3,
+    shadowColor: "#FF6B00",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  glowOuterPressed: {
+    opacity: 0.5,
+    shadowRadius: 25,
+  },
+  // Middle glow layer - creates depth
+  glowMiddle: {
+    position: "absolute",
+    top: -4,
+    left: -4,
+    right: -4,
+    bottom: -4,
+    borderRadius: 9999,
+    backgroundColor: "#FF8520",
+    opacity: 0.4,
+    shadowColor: "#FF8520",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 15,
+    elevation: 8,
+  },
+  glowMiddlePressed: {
+    opacity: 0.6,
+    shadowRadius: 18,
+  },
+  // Main button with gradient
   nextButton: {
-    backgroundColor: "#FFFFFF",
-    paddingVertical: 16,
+    paddingVertical: 18,
     borderRadius: 9999,
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  nextButtonText: {
-    color: "#FF7F50",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  continueButton: {
-    backgroundColor: "#FFFFFF",
-    paddingVertical: 16,
-    borderRadius: 9999,
-    alignItems: "center",
-    shadowColor: "#000",
+    justifyContent: "center",
+    overflow: "hidden",
+    shadowColor: "#FF6B00",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 6,
   },
+  nextButtonPressed: {
+    shadowOpacity: 0.5,
+    shadowRadius: 15,
+  },
+  // Glossy overlay for shiny effect
+  glossOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: "50%",
+    borderRadius: 9999,
+  },
+  nextButtonText: {
+    color: "#FFFFFF",
+    fontSize: 20,
+    fontWeight: "bold",
+    zIndex: 1,
+    textShadowColor: "rgba(0, 0, 0, 0.3)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
   continueButtonText: {
-    color: "#FF7F50",
+    color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "bold",
+    zIndex: 1,
+    textShadowColor: "rgba(0, 0, 0, 0.3)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
 });
