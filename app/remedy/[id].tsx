@@ -18,6 +18,8 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import { getUserId } from "../../utils/userSession";
+import DayDetailModal from "../../components/DayDetailModal";
+import { getRemedyImage, getCategoryImage } from "../../constants/remedyImages";
 
 const { width } = Dimensions.get("window");
 
@@ -38,7 +40,8 @@ export default function RemedyDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const [userId, setUserId] = useState<string>("");
-  const [completedDays, setCompletedDays] = useState<Set<number>>(new Set([1])); // Mock data
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedDay, setSelectedDay] = useState(1);
 
   useEffect(() => {
     getUserId().then(setUserId);
@@ -53,6 +56,12 @@ export default function RemedyDetailScreen() {
   // Find the specific remedy by ID
   const currentRemedy = remedy?.find((r) => r._id === id);
 
+  // Get user's challenge progress
+  const challengeProgress = useQuery(
+    api.remedies.getUserChallengeProgress,
+    userId && id ? { userId, remedyId: id as Id<"remedies"> } : "skip"
+  );
+
   // Check if favorited
   const userFavorites = useQuery(
     api.remedies.getUserFavorites,
@@ -64,6 +73,8 @@ export default function RemedyDetailScreen() {
   // Mutations
   const addToFavorites = useMutation(api.remedies.addToFavorites);
   const removeFromFavorites = useMutation(api.remedies.removeFromFavorites);
+  const joinChallenge = useMutation(api.remedies.joinChallenge);
+  const completeDay = useMutation(api.remedies.completeDay);
 
   const toggleFavorite = async () => {
     if (!userId || !id) return;
@@ -85,17 +96,78 @@ export default function RemedyDetailScreen() {
     }
   };
 
-  const toggleDayComplete = (day: number) => {
-    setCompletedDays((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(day)) {
-        newSet.delete(day);
-      } else {
-        newSet.add(day);
-      }
-      return newSet;
-    });
+  const handleJoinChallenge = async () => {
+    if (!userId || !id) return;
+
+    try {
+      await joinChallenge({ userId, remedyId: id as Id<"remedies"> });
+    } catch (error) {
+      console.error("Error joining challenge:", error);
+    }
   };
+
+  const handleDayClick = async (day: number) => {
+    if (!userId || !id) return;
+
+    // If user hasn't joined yet and clicking day 1, join them first
+    if (!hasJoined && day === 1) {
+      try {
+        await joinChallenge({ userId, remedyId: id as Id<"remedies"> });
+        // After joining, open the modal
+        setSelectedDay(day);
+        setModalVisible(true);
+      } catch (error) {
+        console.error("Error joining challenge:", error);
+      }
+      return;
+    }
+
+    // Check if day is unlocked
+    const isUnlocked = hasJoined && (day === 1 || (challengeProgress?.completedDays.includes(day - 1) || false));
+    
+    if (!isUnlocked) {
+      // Day is locked, show message or do nothing
+      return;
+    }
+
+    // Open modal for this day
+    setSelectedDay(day);
+    setModalVisible(true);
+  };
+
+  const handleCompleteDay = async () => {
+    if (!userId || !id) return;
+    
+    // This will throw an error if daily limit is reached
+    // The error will be caught by the modal
+    await completeDay({ userId, remedyId: id as Id<"remedies">, day: selectedDay });
+  };
+
+  // Determine button text and action
+  const hasJoined = !!challengeProgress;
+  const currentDay = challengeProgress?.currentDay || 1;
+  const completedDays = new Set(challengeProgress?.completedDays || []);
+  
+  const buttonText = hasJoined ? `Start Day ${currentDay}` : "Join Challenge";
+  
+  const handleButtonClick = () => {
+    if (hasJoined) {
+      // Open modal for current day
+      handleDayClick(currentDay);
+    } else {
+      // Join challenge
+      handleJoinChallenge();
+    }
+  };
+
+  // Get tasks and instructions for selected day
+  const tasksForSelectedDay = currentRemedy?.dailyTasks?.[selectedDay - 1] || [
+    "Hydrating Hair Mask",
+    "Scalp Massage",
+    "Mindful Meditation",
+  ];
+  
+  const instructionsForSelectedDay = currentRemedy?.dailyInstructions?.[selectedDay - 1];
 
   if (!currentRemedy) {
     return (
@@ -113,10 +185,21 @@ export default function RemedyDetailScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Day Detail Modal */}
+      <DayDetailModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        challengeTitle={currentRemedy?.title || "Hair Care Challenge"}
+        day={selectedDay}
+        tasks={tasksForSelectedDay}
+        taskInstructions={instructionsForSelectedDay}
+        onComplete={handleCompleteDay}
+      />
+
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* Header with Hero Image */}
         <ImageBackground
-          source={{ uri: "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=800" }}
+          source={{ uri: getRemedyImage(currentRemedy.title) }}
           style={styles.heroImage}
           imageStyle={styles.heroImageStyle}
         >
@@ -189,15 +272,16 @@ export default function RemedyDetailScreen() {
             </Text>
           </View>
 
-          {/* Join Challenge Button */}
+          {/* Join Challenge / Start Day Button */}
           <Animated.View entering={FadeInDown.delay(200)}>
             <Pressable
+              onPress={handleButtonClick}
               style={({ pressed }) => [
                 styles.joinButton,
                 { opacity: pressed ? 0.9 : 1 },
               ]}
             >
-              <Text style={styles.joinButtonText}>Join Challenge</Text>
+              <Text style={styles.joinButtonText}>{buttonText}</Text>
             </Pressable>
           </Animated.View>
 
@@ -208,17 +292,20 @@ export default function RemedyDetailScreen() {
             <View style={styles.daysGrid}>
               {days.map((day, index) => {
                 const isCompleted = completedDays.has(day);
+                const isUnlocked = (day === 1) || (hasJoined && completedDays.has(day - 1));
                 const isLastDay = day === totalDays;
                 const showArrow = index < days.length - 1 && (index + 1) % 4 !== 0;
 
                 return (
                   <React.Fragment key={day}>
                     <Pressable
-                      onPress={() => toggleDayComplete(day)}
+                      onPress={() => handleDayClick(day)}
+                      disabled={!isUnlocked}
                       style={({ pressed }) => [
                         styles.dayCircle,
                         isCompleted && styles.dayCircleCompleted,
-                        { opacity: pressed ? 0.8 : 1 },
+                        !isUnlocked && styles.dayCircleLocked,
+                        { opacity: pressed ? 0.8 : !isUnlocked ? 0.5 : 1 },
                       ]}
                     >
                       {isCompleted && !isLastDay ? (
@@ -453,6 +540,10 @@ const styles = StyleSheet.create({
   dayCircleCompleted: {
     backgroundColor: COLORS.primary,
     borderColor: COLORS.primary,
+  },
+  dayCircleLocked: {
+    backgroundColor: COLORS.surfaceContainer,
+    borderColor: COLORS.outline,
   },
   dayNumber: {
     fontSize: 14,

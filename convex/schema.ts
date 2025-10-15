@@ -61,6 +61,8 @@ export default defineSchema({
     description: v.optional(v.string()),
     ingredients: v.optional(v.array(v.string())),
     instructions: v.optional(v.array(v.string())),
+    dailyTasks: v.optional(v.array(v.array(v.string()))), // Array of arrays - one array of tasks per day
+    dailyInstructions: v.optional(v.array(v.array(v.string()))), // Array of arrays - detailed instructions for each task per day
     createdAt: v.number(),
   })
     .index("by_category", ["category"])
@@ -70,6 +72,21 @@ export default defineSchema({
     userId: v.string(),
     remedyId: v.id("remedies"),
     createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_remedy", ["remedyId"])
+    .index("by_user_and_remedy", ["userId", "remedyId"]),
+  
+  userChallenges: defineTable({
+    userId: v.string(),
+    remedyId: v.id("remedies"),
+    currentDay: v.number(), // Current day the user is on (1-based)
+    completedDays: v.array(v.number()), // Array of completed day numbers
+    lastCompletedDayDate: v.optional(v.string()), // Date when last day was completed (YYYY-MM-DD format)
+    currentBatchCount: v.optional(v.number()), // Number of challenges completed in current batch (max 2)
+    currentBatchStartTime: v.optional(v.number()), // Timestamp when current batch started
+    joinedAt: v.number(),
+    lastActivityAt: v.number(),
   })
     .index("by_user", ["userId"])
     .index("by_remedy", ["remedyId"])
