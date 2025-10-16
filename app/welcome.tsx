@@ -21,6 +21,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 
 const { width, height } = Dimensions.get("window");
 
@@ -246,6 +247,7 @@ export default function WelcomeScreen() {
         <SafeAreaView style={styles.skipContainer} edges={["top"]}>
           <Pressable onPress={handleSkip} style={styles.skipButton}>
             <Text style={styles.skipText}>Skip</Text>
+            <Ionicons name="arrow-forward" size={18} color="#FFFFFF" style={styles.skipArrow} />
           </Pressable>
         </SafeAreaView>
       )}
@@ -323,6 +325,9 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   skipButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
     paddingHorizontal: 20,
     paddingVertical: 8,
   },
@@ -334,6 +339,11 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
   },
+  skipArrow: {
+    textShadowColor: "rgba(0, 0, 0, 0.3)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
   slide: {
     width: width,
     height: height,
@@ -341,11 +351,11 @@ const styles = StyleSheet.create({
   imageBackground: {
     flex: 1,
     width: "100%",
-    height: "100%",
+    height: "60%",
+    backgroundSize:"contain"
   },
   imageStyle: {
     alignSelf: "center",
-    top: -100,
   },
   slideContent: {
     flex: 1,
@@ -401,8 +411,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: "#0D0C16",
-    borderTopEndRadius: 100,
-    borderTopStartRadius: 100,
+    borderTopEndRadius: 50,
+    borderTopStartRadius: 50,
   },
   buttonSafeArea: {
     paddingTop: 20,
